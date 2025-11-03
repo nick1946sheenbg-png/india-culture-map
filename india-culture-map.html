@@ -1,0 +1,267 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Culture Map — India (Interactive)</title>
+
+<style>
+  /* --- Page layout --- */
+  body{ margin:0; font-family: "Poppins", Arial, Helvetica, sans-serif; background:#fbfaf8; color:#0b2a18; }
+  .wrap{ max-width:1300px; margin:14px auto; padding:12px; box-sizing:border-box; }
+  .title{ text-align:center; color:#0b4e2a; font-size:26px; font-weight:700; margin-bottom:12px; }
+  .subtitle{ text-align:center; color:#2f5b3f; margin-bottom:18px; font-size:15px; }
+
+  /* --- SVG container --- */
+  .map-frame{ width:100%; background:#fffefc; border-radius:10px; padding:12px; box-shadow:0 12px 30px rgba(6,30,12,0.06); }
+  svg { width:100%; height:auto; display:block; border-radius:8px; overflow:visible; }
+
+  /* --- States style --- */
+  .state{ cursor:pointer; stroke:#ffffff; stroke-width:1.2; transition: transform .14s ease, filter .14s ease, opacity .14s ease; }
+  .state:focus{ outline:none; }
+  .state:hover, .state.active { transform: translateY(-6px) scale(1.02); filter: drop-shadow(0 10px 30px rgba(20,80,40,0.09)); opacity:0.98; }
+
+  /* --- tooltip (small hover label) --- */
+  #mapTooltip { position: fixed; pointer-events:none; display:none; z-index:12000; background:rgba(6,30,10,0.9); color:#fff; padding:8px 10px; border-radius:8px; font-size:13px; box-shadow:0 6px 18px rgba(0,0,0,0.18); }
+
+  /* --- Modal (full map overlay) --- */
+  .modal-wrap { position: fixed; inset:0; display:none; align-items:center; justify-content:center; background: rgba(6, 20, 10, 0.5); z-index:13000; padding:20px; box-sizing:border-box; }
+  .modal-card { width:100%; max-width:960px; background:#ffffff; color:#0b1720; border-radius:12px; box-shadow:0 20px 60px rgba(3,18,8,0.18); padding:18px; position:relative; max-height:86vh; overflow:auto; }
+  .modal-head { display:flex; align-items:center; justify-content:space-between; }
+  .modal-title { font-size:20px; color:#0b4e2a; font-weight:700; margin:0; padding-right:10px; }
+  .close-x { background:transparent; border:0; font-weight:700; font-size:16px; color:#fff; background:#1a7f37; padding:6px 10px; border-radius:6px; cursor:pointer; }
+  .modal-body { margin-top:12px; font-size:15px; color:#111; line-height:1.6; }
+  .modal-actions { margin-top:16px; text-align:right; }
+  .btn-close { display:inline-block; background:#1a7f37; color:#fff; padding:8px 14px; border-radius:8px; text-decoration:none; font-weight:700; cursor:pointer; border:0; }
+
+  /* small screen adjustments */
+  @media (max-width:760px){
+    .title{ font-size:20px; }
+    .modal-card{ padding:14px; max-width:98%; }
+    .modal-title{ font-size:18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="title">Culture - સંસ્કૃતિ</div>
+  <div class="subtitle">Click any state to read detailed cultural information. Close the popup to return to the map.</div>
+
+  <div class="map-frame" id="mapFrame">
+    <!-- Tooltip -->
+    <div id="mapTooltip"></div>
+
+    <!-- FULL-WIDTH ILLUSTRATIVE INDIA SVG MAP
+         Note: shapes are stylized for readability.
+         Each <path> has:
+           - id (unique)
+           - class="state"
+           - data-name (display name)
+           - data-info (short detail; in modal we'll show longer text)
+    -->
+    <svg id="indiaSVG" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Interactive map of India">
+      <defs>
+        <linearGradient id="gradA" x1="0" x2="1"><stop offset="0" stop-color="#dff8e8"/><stop offset="1" stop-color="#9fe0b2"/></linearGradient>
+        <linearGradient id="gradB" x1="0" x2="1"><stop offset="0" stop-color="#e6f0ff"/><stop offset="1" stop-color="#8bbdf7"/></linearGradient>
+        <linearGradient id="gradC" x1="0" x2="1"><stop offset="0" stop-color="#fff5e6"/><stop offset="1" stop-color="#ffd69b"/></linearGradient>
+        <linearGradient id="gradD" x1="0" x2="1"><stop offset="0" stop-color="#f6fff2"/><stop offset="1" stop-color="#c9f0c8"/></linearGradient>
+        <linearGradient id="gradE" x1="0" x2="1"><stop offset="0" stop-color="#f2eaff"/><stop offset="1" stop-color="#cfc1ff"/></linearGradient>
+      </defs>
+
+      <!-- Large stylized shapes for demo readability on full width -->
+      <!-- Gujarat -->
+      <path id="st-GJ" class="state" data-name="Gujarat" data-code="GJ"
+            data-info="ગુજરાત — ગરબા અને ડાંડીયા; હસ્તકલાઓ અને કચ્છની કલા; વડોદરા અને અમદાવાદ જેવા ઐતિહાસિક અને ઇન્ડસ્ટ્રીયલ શહેરો."
+            fill="url(#gradD)" d="M110 220 C170 190, 260 170, 340 190 C380 200, 420 220, 430 250 C420 270, 380 290, 330 300 C280 310, 220 300, 170 280 C130 260,110 240,110 220 Z" />
+
+      <!-- Rajasthan -->
+      <path id="st-RJ" class="state" data-name="Rajasthan" data-code="RJ"
+            data-info="રાજસ્થાન — કિલ્લા, મહેલ અને લોકસાંસ્કૃતિક દર્શન; રજવાડી નવરંગ અને લોકગીતો; જયપુર અને ઉદયપુર જેવા પ્રવાસી કેન્દ્ર."
+            fill="url(#gradC)" d="M170 140 C220 120, 300 110, 360 130 C400 142, 420 170, 400 200 C360 220, 300 230, 240 220 C200 210,180 180,170 140 Z" />
+
+      <!-- Punjab -->
+      <path id="st-PB" class="state" data-name="Punjab" data-code="PB"
+            data-info="પંજાબ — ભરપૂર કૃષિ, ભંગરા નૃત્ય અને લોક સંગીત; અમેર શૈલી સાથે લોકાહિત સેવાઓ માટે જાણીતું."
+            fill="url(#gradB)" d="M300 80 C330 70,370 70,400 80 C420 88,420 110,400 120 C365 130,320 120,300 100 Z" />
+
+      <!-- Maharashtra -->
+      <path id="st-MH" class="state" data-name="Maharashtra" data-code="MH"
+            data-info="મહારાષ્ટ્ર — બોલિવૂડ મનોરંજન, ગણેશ ઉત્સવ અને મુંબઇ શહેર; પુણેની સંસ્કૃતિ અને ઔદ્યોગિક વિકાસ."
+            fill="url(#gradA)" d="M300 260 C360 240, 450 230, 520 250 C560 262,600 290,610 320 C590 340,540 360,480 370 C420 380,340 360,300 330 C280 310,300 290,300 260 Z" />
+
+      <!-- Andhra Pradesh -->
+      <path id="st-AP" class="state" data-name="Andhra Pradesh" data-code="AP"
+            data-info="આંધ્રપ્રદેશ — કુચિપુડી નૃત્ય, તિરુપતિ મંદિર અને વિશાળ વીજળીકૃતિ; სამხრ ભારતની વિશિષ્ટ રસોઇ."
+            fill="url(#gradC)" d="M560 350 C620 330,700 320,760 340 C790 350,820 370,800 400 C740 420,680 430,620 440 C560 440,560 420,560 350 Z" />
+
+      <!-- Karnataka -->
+      <path id="st-KA" class="state" data-name="Karnataka" data-code="KA"
+            data-info="કર્ણાટક — અમેરિકી અને તહેવારો, બગીચા અને ઇતિહાસિક સ્થળો; કન્નડ સાહિત્ય અને સાંસ્કૃતિક ઉત્સવો."
+            fill="url(#gradE)" d="M400 350 C460 340,520 330,560 350 C590 365,610 390,600 420 C560 430,520 440,450 420 C430 390,400 360,400 350 Z" />
+
+      <!-- Tamil Nadu -->
+      <path id="st-TN" class="state" data-name="Tamil Nadu" data-code="TN"
+            data-info="તમિલનાડુ — ભવ્ય મંદિરો, બેઈલન અને ભકિત નૃત્ય; માલેઝિયા-તુલ્ય વૈભવ અને વિજ્ઞાન સંસ્કૃતિ."
+            fill="url(#gradA)" d="M620 430 C680 420,740 420,780 450 C800 470,780 500,740 520 C700 520,660 500,620 480 C640 460,620 440,620 430 Z" />
+
+      <!-- Kerala -->
+      <path id="st-KL" class="state" data-name="Kerala" data-code="KL"
+            data-info="કેરળ — બેકવોટર, આયુર્વેદ અને દક્ષિણ ભારતીય નૃત્ય; રસોઇ અને પ્રશાંત પ્રવાસના કેન્દ્ર."
+            fill="url(#gradB)" d="M560 430 C540 470,540 500,540 530 C520 540,500 520,490 500 C500 470,520 450,540 430 Z" />
+
+      <!-- West Bengal -->
+      <path id="st-WB" class="state" data-name="West Bengal" data-code="WB"
+            data-info="પશ્ચિમ બંગાળ — કલાપ્રવણતા, ભારતના પારંપરિક કાવ્ય અને ભોજન પરંપરા માટે જાણીતી."
+            fill="url(#gradD)" d="M820 220 C860 210,920 220,940 250 C950 270,930 300,880 320 C820 340,780 300,760 280 700 Z" />
+
+      <!-- Odisha -->
+      <path id="st-OR" class="state" data-name="Odisha" data-code="OR"
+            data-info="ઓડિશા — ઐતિહાસિક મંદિર, હસ્તકલાઓ અને નૃત્ય પરંપરાઓ માટે પ્રસિદ્ધ."
+            fill="url(#gradE)" d="M700 300 C740 290,780 290,800 310 C830 330,820 360,780 380 C740 360,720 320,700 300 Z" />
+
+      <!-- Assam (NE cluster simplified) -->
+      <path id="st-AS" class="state" data-name="Assam" data-code="AS"
+            data-info="આસામ — ચા બગીચા, નદીઓ અને એલોપોનિક નૃત્ય-સંસ્કૃતિ માટે પ્રસિદ્ધ."
+            fill="url(#gradA)" d="M960 160 C980 150,1020 160,1040 180 C1060 200,1040 230,1000 250 C960 230,940 200,960 160 Z" />
+
+      <!-- Bihar -->
+      <path id="st-BR" class="state" data-name="Bihar" data-code="BR"
+            data-info="બિહાર — ઐતિહાસિક અને ધાર્મિક સ્થળો; સાંસ્કૃતિક ઉત્સવો અને લાયક ભાષિક પરંપરાઓ."
+            fill="url(#gradC)" d="M680 200 C720 190,760 190,780 210 C800 230,790 260,760 270 C720 260,700 250,680 220 Z" />
+
+      <!-- Decorative labels for readability -->
+      <g font-family="Poppins, sans-serif" font-size="14" font-weight="700" fill="#0b4e2a">
+        <text x="320" y="295">Maharashtra</text>
+        <text x="120" y="230">Gujarat</text>
+        <text x="200" y="160">Rajasthan</text>
+        <text x="420" y="380">Karnataka</text>
+        <text x="610" y="360">Andhra Pradesh</text>
+        <text x="640" y="440">Tamil Nadu</text>
+        <text x="820" y="240">W. Bengal</text>
+        <text x="740" y="310">Odisha</text>
+        <text x="980" y="180">Assam</text>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<!-- Modal / Popup (covers map area when open) -->
+<div id="infoModal" class="modal-wrap" aria-hidden="true" role="dialog">
+  <div class="modal-card" role="document" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <h2 id="modalTitle" class="modal-title">State Name</h2>
+      <button id="btnCloseX" class="close-x" aria-label="Close">X</button>
+    </div>
+
+    <div id="modalBody" class="modal-body">
+      <!-- Content inserted dynamically -->
+      <p>Loading...</p>
+    </div>
+
+    <div class="modal-actions">
+      <button id="btnClose" class="btn-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/*
+  Interactive Map Script
+  - Shows tooltip on hover
+  - On click/tap opens modal with text content
+  - Modal has X (top-right) and Close (bottom) buttons
+  - Esc closes modal
+*/
+
+(function(){
+  const tooltip = document.getElementById('mapTooltip');
+  const svg = document.getElementById('indiaSVG');
+  const states = svg.querySelectorAll('.state');
+  const modalWrap = document.getElementById('infoModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+  const btnClose = document.getElementById('btnClose');
+  const btnCloseX = document.getElementById('btnCloseX');
+
+  // Helper: show tooltip
+  function showTooltip(text, pageX, pageY){
+    tooltip.style.left = (pageX + 12) + 'px';
+    tooltip.style.top = (pageY - 36) + 'px';
+    tooltip.innerHTML = text;
+    tooltip.style.display = 'block';
+  }
+  function hideTooltip(){ tooltip.style.display = 'none'; }
+
+  // For each state: add mouse + touch handlers
+  states.forEach(function(s){
+    // mouse move -> follow pointer and show state name
+    s.addEventListener('mousemove', function(e){
+      const name = s.getAttribute('data-name') || 'State';
+      showTooltip('<strong>' + name + '</strong>', e.pageX, e.pageY);
+    });
+
+    s.addEventListener('mouseleave', function(){
+      hideTooltip();
+    });
+
+    // click -> open modal
+    s.addEventListener('click', function(e){
+      openModalForState(s);
+    });
+
+    // touch support: tap to open (prevent double-handling)
+    s.addEventListener('touchstart', function(e){
+      e.preventDefault();
+      openModalForState(s);
+    });
+  });
+
+  // Modal open function: uses data attributes (data-name, data-info)
+  function openModalForState(elem){
+    const name = elem.getAttribute('data-name') || 'State';
+    const info = elem.getAttribute('data-info') || 'Detailed cultural info will be added here.';
+    // set content
+    modalTitle.innerText = name;
+    // Build a formatted HTML body (you can later replace/extend)
+    modalBody.innerHTML = '<p style="margin-top:6px;"><strong>State:</strong> ' + name + '</p>'
+                        + '<p style="margin-top:6px;">' + info + '</p>'
+                        + '<hr style="margin:12px 0;">'
+                        + '<p style="margin-top:6px;color:#444;">You can add longer historical details, festivals, language, famous foods, dances, and tourist places here. This popup is text-only and optimized for reading.</p>';
+    // show modal
+    modalWrap.style.display = 'flex';
+    modalWrap.setAttribute('aria-hidden','false');
+    // hide tooltip
+    hideTooltip();
+    // mark state active (visual)
+    states.forEach(s=> s.classList.remove('active'));
+    elem.classList.add('active');
+    // scroll to top of modal (in case)
+    modalWrap.scrollTop = 0;
+  }
+
+  // Close modal
+  function closeModal(){
+    modalWrap.style.display = 'none';
+    modalWrap.setAttribute('aria-hidden','true');
+    // remove active highlight
+    states.forEach(s=> s.classList.remove('active'));
+  }
+
+  btnClose.addEventListener('click', closeModal);
+  btnCloseX.addEventListener('click', closeModal);
+  // click outside modal card closes
+  modalWrap.addEventListener('click', function(e){
+    if(e.target === modalWrap) closeModal();
+  });
+  // ESC key closes
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && modalWrap.style.display === 'flex') closeModal();
+  });
+
+})();
+</script>
+
+</body>
+</html>
